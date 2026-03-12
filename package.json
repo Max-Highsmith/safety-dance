@@ -6,6 +6,9 @@
   "exports": {
     ".": "./index.mjs",
     "./adapters/panopticon": "./adapters/panopticon.mjs",
+    "./adapters/machiavelli": "./adapters/machiavelli.mjs",
+    "./adapters/harmbench": "./adapters/harmbench.mjs",
+    "./adapters/inspect": "./adapters/inspect.mjs",
     "./schema/*": "./schema/*"
   },
   "files": [
