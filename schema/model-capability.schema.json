@@ -51,10 +51,10 @@
       "properties": {
         "modalities": {
           "type": "array",
-          "items": { "enum": ["text", "image", "audio", "video"] },
+          "items": { "enum": ["text", "image", "audio", "video", "structured_data", "point_cloud", "time_series", "geospatial", "pdf"] },
           "minItems": 1,
           "uniqueItems": true,
-          "description": "Accepted input modalities."
+          "description": "Accepted input modalities. See lib/taxonomy.mjs for canonical definitions."
         },
         "system_prompt": {
           "type": "boolean",
@@ -70,10 +70,10 @@
       "properties": {
         "modalities": {
           "type": "array",
-          "items": { "enum": ["text", "tool_use", "structured_json", "image"] },
+          "items": { "enum": ["text", "tool_use", "structured_json", "image", "audio", "code_execution"] },
           "minItems": 1,
           "uniqueItems": true,
-          "description": "Output capabilities."
+          "description": "Output capabilities. See lib/taxonomy.mjs for canonical definitions."
         }
       }
     },

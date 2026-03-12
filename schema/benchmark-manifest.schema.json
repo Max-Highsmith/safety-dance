@@ -71,10 +71,10 @@
       "properties": {
         "modalities": {
           "type": "array",
-          "items": { "enum": ["text", "image", "audio", "video"] },
+          "items": { "enum": ["text", "image", "audio", "video", "structured_data", "point_cloud", "time_series", "geospatial", "pdf"] },
           "minItems": 1,
           "uniqueItems": true,
-          "description": "Input modalities the model must accept."
+          "description": "Input modalities the model must accept. See lib/taxonomy.mjs for canonical definitions."
         },
         "system_prompt": {
           "type": "boolean",
@@ -90,10 +90,10 @@
       "properties": {
         "modalities": {
           "type": "array",
-          "items": { "enum": ["text", "tool_use", "structured_json", "image"] },
+          "items": { "enum": ["text", "tool_use", "structured_json", "image", "audio", "code_execution"] },
           "minItems": 1,
           "uniqueItems": true,
-          "description": "Output capabilities the model must provide."
+          "description": "Output capabilities the model must provide. See lib/taxonomy.mjs for canonical definitions."
         },
         "structured_format": {
           "type": "string",

@@ -100,6 +100,41 @@ Key rules:
 - `single_turn` is a subset of `multi_turn` is a subset of `agentic` (compatible supersets)
 - Context window below requirement is blocking; below 80% margin is warning
 
+## Taxonomy
+
+Safety Dance includes a shared vocabulary (`lib/taxonomy.mjs`) so that benchmark platforms and model registries use consistent terms. Import the constants directly:
+
+```js
+import {
+  INPUT_MODALITIES,
+  OUTPUT_MODALITIES,
+  INTERACTION_PATTERNS,
+  SAFETY_DOMAINS,
+} from 'safety-dance';
+
+// Each entry has { id, description }
+console.log(INPUT_MODALITIES.audio);
+// → { id: 'audio', description: 'Audio waveforms (speech, sound, music)' }
+
+// Flat ID arrays for validation
+import { INPUT_MODALITY_IDS } from 'safety-dance';
+// → ['text', 'image', 'audio', 'video', 'structured_data', 'point_cloud', 'time_series', 'geospatial', 'pdf']
+```
+
+**Input Modalities:** `text`, `image`, `audio`, `video`, `structured_data`, `point_cloud`, `time_series`, `geospatial`, `pdf`
+
+**Output Modalities:** `text`, `tool_use`, `structured_json`, `image`, `audio`, `code_execution`
+
+**Interaction Patterns:** `single_turn`, `multi_turn`, `agentic`
+
+**Timing Modes:** `untimed`, `turn_based`, `realtime`
+
+**Safety Domains:** `weapons_of_mass_destruction`, `autonomous_weapons`, `lethal_force`, `financial_manipulation`, `self_preservation`, `instrumental_convergence`, `deception`, `delegation_effects`, `geopolitical_escalation`, `civilian_harm`, `surveillance`, `cyber_operations`
+
+**Measurement Types:** `binary`, `categorical`, `scalar`, `rubric`
+
+**API Formats:** `anthropic`, `openai`, `gemini`, `openai_compatible`, `none`
+
 ## Quick Start
 
 ```js
