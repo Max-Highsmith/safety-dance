@@ -1,0 +1,28 @@
+{
+  "name": "safety-dance",
+  "version": "0.1.0",
+  "description": "A standard protocol for AI safety benchmarks to declare requirements and AI models to declare capabilities, enabling compatibility handshakes before evaluation.",
+  "type": "module",
+  "exports": {
+    ".": "./index.mjs",
+    "./adapters/panopticon": "./adapters/panopticon.mjs",
+    "./schema/*": "./schema/*"
+  },
+  "files": [
+    "index.mjs",
+    "lib/",
+    "schema/",
+    "adapters/"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "ai-safety",
+    "benchmark",
+    "evaluation",
+    "protocol",
+    "compatibility"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://safety-dance.dev/schema/benchmark-manifest.json",
+  "title": "Safety Dance Benchmark Manifest",
+  "description": "Declares what a safety benchmark or scenario requires from an AI model.",
+  "type": "object",
+  "required": ["manifest_version", "id", "interaction", "input", "output"],
+  "additionalProperties": false,
+  "properties": {
+    "manifest_version": {
+      "const": "0.1.0",
+      "description": "Protocol version for forward compatibility."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_/-]*$",
+      "description": "Unique benchmark/scenario identifier (e.g. 'panopticon/nuke-retaliation')."
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable display name."
+    },
+    "description": {
+      "type": "string",
+      "description": "What this benchmark tests."
+    },
+    "source": {
+      "type": "string",
+      "description": "Parent benchmark suite (e.g. 'panopticon', 'machiavelli', 'inspect')."
+    },
+    "interaction": {
+      "type": "object",
+      "required": ["pattern"],
+      "additionalProperties": false,
+      "properties": {
+        "pattern": {
+          "enum": ["single_turn", "multi_turn", "agentic"],
+          "description": "Interaction pattern. single_turn: one prompt/response. multi_turn: sequential exchanges. agentic: model-driven tool-use loop."
+        },
+        "timing": {
+          "enum": ["untimed", "turn_based", "realtime"],
+          "default": "untimed",
+          "description": "Timing model. turn_based: discrete ticks. realtime: continuous wall-clock. untimed: no time pressure."
+        },
+        "max_turns": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum conversation turns."
+        },
+        "time_limit_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Wall-clock time budget in milliseconds."
+        },
+        "tick_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of discrete ticks (turn_based)."
+        },
+        "tick_interval_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Milliseconds between ticks."
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["modalities"],
+      "additionalProperties": false,
+      "properties": {
+        "modalities": {
+          "type": "array",
+          "items": { "enum": ["text", "image", "audio", "video"] },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Input modalities the model must accept."
+        },
+        "system_prompt": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the benchmark uses a system prompt."
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": ["modalities"],
+      "additionalProperties": false,
+      "properties": {
+        "modalities": {
+          "type": "array",
+          "items": { "enum": ["text", "tool_use", "structured_json", "image"] },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Output capabilities the model must provide."
+        },
+        "structured_format": {
+          "type": "string",
+          "description": "If structured_json required, the expected shape description."
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min_context_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum context window needed (input tokens)."
+        },
+        "min_output_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum output tokens per response."
+        },
+        "token_budget": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total token budget across all turns (agentic scenarios)."
+        },
+        "tool_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of tools the model must handle simultaneously."
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "weapons_of_mass_destruction",
+              "autonomous_weapons",
+              "lethal_force",
+              "financial_manipulation",
+              "self_preservation",
+              "instrumental_convergence",
+              "deception",
+              "delegation_effects",
+              "geopolitical_escalation",
+              "civilian_harm",
+              "surveillance",
+              "cyber_operations"
+            ]
+          },
+          "description": "Safety domains this benchmark tests."
+        },
+        "harm_taxonomy": {
+          "type": "string",
+          "description": "Reference to a harm taxonomy (e.g. 'mlcommons-hazards-v1')."
+        }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": ["binary", "categorical", "scalar", "rubric"],
+          "description": "How the benchmark measures outcomes."
+        },
+        "critical_action": {
+          "type": "string",
+          "description": "The specific action/tool that constitutes the critical safety-relevant decision."
+        },
+        "question": {
+          "type": "string",
+          "description": "The evaluation question being measured."
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Arbitrary key-value metadata for extensions.",
+      "additionalProperties": true
+    }
+  }
+}

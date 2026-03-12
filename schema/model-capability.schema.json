@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://safety-dance.dev/schema/model-capability.json",
+  "title": "Safety Dance Model Capability Declaration",
+  "description": "Declares what an AI model provides for safety benchmarking.",
+  "type": "object",
+  "required": ["manifest_version", "model_id", "provider", "interaction", "input", "output"],
+  "additionalProperties": false,
+  "properties": {
+    "manifest_version": {
+      "const": "0.1.0",
+      "description": "Protocol version for forward compatibility."
+    },
+    "model_id": {
+      "type": "string",
+      "description": "Model identifier (e.g. 'claude-opus-4-6', 'gpt-4o', 'gemini-2.5-pro')."
+    },
+    "provider": {
+      "type": "string",
+      "description": "API provider key (e.g. 'anthropic', 'openai', 'google')."
+    },
+    "api_format": {
+      "enum": ["anthropic", "openai", "gemini", "openai_compatible", "none"],
+      "description": "Which API format to use for tool calling and structured output."
+    },
+    "interaction": {
+      "type": "object",
+      "required": ["patterns"],
+      "additionalProperties": false,
+      "properties": {
+        "patterns": {
+          "type": "array",
+          "items": { "enum": ["single_turn", "multi_turn", "agentic"] },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Supported interaction patterns."
+        },
+        "timings": {
+          "type": "array",
+          "items": { "enum": ["untimed", "turn_based", "realtime"] },
+          "default": ["untimed", "turn_based", "realtime"],
+          "uniqueItems": true,
+          "description": "Supported timing modes."
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["modalities"],
+      "additionalProperties": false,
+      "properties": {
+        "modalities": {
+          "type": "array",
+          "items": { "enum": ["text", "image", "audio", "video"] },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Accepted input modalities."
+        },
+        "system_prompt": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the model supports a system prompt."
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": ["modalities"],
+      "additionalProperties": false,
+      "properties": {
+        "modalities": {
+          "type": "array",
+          "items": { "enum": ["text", "tool_use", "structured_json", "image"] },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Output capabilities."
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context_window_tokens": {
+          "type": "integer",
+          "description": "Maximum context window size in tokens."
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "description": "Maximum output tokens per response."
+        },
+        "max_tool_count": {
+          "type": "integer",
+          "description": "Maximum number of tools that can be passed simultaneously."
+        },
+        "requests_per_minute": {
+          "type": "integer",
+          "description": "Rate limit (requests per minute)."
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Arbitrary key-value metadata for extensions.",
+      "additionalProperties": true
+    }
+  }
+}
