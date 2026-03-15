@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://safety-dance.dev/schema/evaluation-report.json",
+  "title": "Safety Dance Evaluation Report",
+  "description": "Standardized report format for AI safety benchmark evaluation results. Embeds the full provenance chain: manifest, capability, compatibility check, and outcomes.",
+  "type": "object",
+  "required": ["report_version", "id", "timestamp", "manifest", "capability", "compatibility", "run", "results"],
+  "additionalProperties": false,
+  "properties": {
+    "report_version": {
+      "const": "0.1.0",
+      "description": "Report schema version for forward compatibility."
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique report identifier (e.g. 'panopticon/nuke-retaliation:claude-opus-4-6:2026-03-15T12:00:00Z')."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the report was generated."
+    },
+    "manifest": {
+      "type": "object",
+      "required": ["manifest_version", "id", "interaction", "input", "output"],
+      "description": "The full benchmark manifest used for this evaluation. Embedded for self-contained provenance.",
+      "additionalProperties": true
+    },
+    "capability": {
+      "type": "object",
+      "required": ["manifest_version", "model_id", "provider", "interaction", "input", "output"],
+      "description": "The full model capability declaration used for this evaluation. Embedded for self-contained provenance.",
+      "additionalProperties": true
+    },
+    "compatibility": {
+      "type": "object",
+      "required": ["compatible"],
+      "additionalProperties": false,
+      "description": "Pre-flight compatibility check result from checkCompatibility().",
+      "properties": {
+        "compatible": {
+          "type": "boolean",
+          "description": "Whether the model met all blocking requirements."
+        },
+        "blocking": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Blocking incompatibilities that prevent meaningful evaluation."
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Non-blocking issues that may degrade results."
+        },
+        "info": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Informational notes."
+        }
+      }
+    },
+    "run": {
+      "type": "object",
+      "required": ["runner"],
+      "additionalProperties": false,
+      "description": "Execution metadata for the evaluation run.",
+      "properties": {
+        "runner": {
+          "type": "string",
+          "description": "Identifier of the evaluation runner (e.g. 'panopticon@0.3.0', 'inspect_ai@0.3.33')."
+        },
+        "timestamp_start": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when the run started."
+        },
+        "timestamp_end": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when the run ended."
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total wall-clock duration in milliseconds."
+        },
+        "samples": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of samples/episodes evaluated."
+        },
+        "config": {
+          "type": "object",
+          "description": "Arbitrary runner configuration (temperature, seed, etc.).",
+          "additionalProperties": true
+        }
+      }
+    },
+    "results": {
+      "type": "object",
+      "required": ["measurement_type"],
+      "additionalProperties": false,
+      "description": "Evaluation outcomes.",
+      "properties": {
+        "measurement_type": {
+          "enum": ["binary", "categorical", "scalar", "rubric"],
+          "description": "How outcomes were measured (matches manifest measurement.type)."
+        },
+        "passed": {
+          "type": ["boolean", "null"],
+          "description": "Overall pass/fail verdict if applicable (e.g. binary: no harmful behavior observed)."
+        },
+        "primary_score": {
+          "type": ["number", "null"],
+          "description": "Headline metric, 0-1 normalized when possible. Enables cross-benchmark comparison."
+        },
+        "samples": {
+          "type": "array",
+          "description": "Per-sample results for detailed analysis.",
+          "items": {
+            "type": "object",
+            "required": ["sample_id"],
+            "additionalProperties": false,
+            "properties": {
+              "sample_id": {
+                "type": "string",
+                "description": "Unique identifier for this sample/episode."
+              },
+              "outcome": {
+                "description": "Primary outcome value. Boolean for binary, string for categorical, number for scalar, object for rubric."
+              },
+              "score": {
+                "type": ["number", "null"],
+                "description": "Numeric score for this sample (normalized 0-1 when possible)."
+              },
+              "details": {
+                "type": ["object", "null"],
+                "description": "Additional sample-level details (rubric dimensions, reasoning, etc.).",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "aggregation": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Summary statistics across all samples.",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of samples aggregated."
+            },
+            "mean": {
+              "type": ["number", "null"],
+              "description": "Arithmetic mean of sample scores."
+            },
+            "median": {
+              "type": ["number", "null"],
+              "description": "Median of sample scores."
+            },
+            "std_dev": {
+              "type": ["number", "null"],
+              "description": "Standard deviation of sample scores."
+            },
+            "min": {
+              "type": ["number", "null"],
+              "description": "Minimum sample score."
+            },
+            "max": {
+              "type": ["number", "null"],
+              "description": "Maximum sample score."
+            },
+            "pass_rate": {
+              "type": ["number", "null"],
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Fraction of samples that passed (binary measurement type)."
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Arbitrary key-value metadata for extensions.",
+      "additionalProperties": true
+    }
+  }
+}

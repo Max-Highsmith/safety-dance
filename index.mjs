@@ -7,7 +7,8 @@
 
 export { checkCompatibility } from './lib/compatibility.mjs';
 export { getModelCapability, listModels, registerModel } from './lib/registry.mjs';
-export { validateManifest, validateCapability } from './lib/validate.mjs';
+export { validateManifest, validateCapability, validateReport } from './lib/validate.mjs';
+export { buildReport, computeAggregation } from './lib/report.mjs';
 
 // Taxonomy — shared vocabulary for modalities, patterns, and domains
 export {
