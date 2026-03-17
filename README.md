@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="safety_dance.png" alt="Safety Dance" width="600" />
-</p>
-
 <h1 align="center">Safety Dance</h1>
 
 <p align="center">
@@ -18,11 +14,17 @@
 
 ---
 
+<img align="left" src="assets/robot1.png" width="100">
+
 ## The Problem
 
 There are 200+ AI safety benchmarks and a growing number of multimodal models. Each benchmark has implicit requirements — input modalities, interaction patterns, tool-use support, context window minimums — but there's no machine-readable way to check whether a given model meets them before running an evaluation.
 
 An audio+text safety benchmark paired with a text-only model will simply fail. An agentic evaluation run against a model without tool-use support will produce meaningless results. Today, these incompatibilities are discovered at runtime.
+
+<br clear="both">
+
+<img align="right" src="assets/robot2.png" width="100">
 
 ## Quick Start
 
@@ -72,6 +74,10 @@ const report = buildReport({
 });
 // report.results.aggregation is auto-computed: { count, mean, pass_rate, ... }
 ```
+
+<br clear="both">
+
+<img align="left" src="assets/robot3.png" width="100">
 
 ## The Protocol
 
@@ -168,6 +174,10 @@ Key rules:
 - `single_turn` ⊂ `multi_turn` ⊂ `agentic` (compatible supersets)
 - Context window below requirement is blocking; below 80% margin is warning
 
+<br clear="both">
+
+<img align="right" src="assets/robot4.png" width="100">
+
 ## Evaluation Reports
 
 Safety Dance includes a standardized post-evaluation report format that closes the loop on the protocol. Reports embed the full provenance chain — manifest, capability, compatibility check, and outcomes — enabling cross-benchmark comparison.
@@ -205,6 +215,10 @@ const { valid, errors } = validateReport(report);
 ```
 
 Reports support all measurement types: `binary` (pass_rate), `scalar` (mean/median/std_dev), `categorical`, and `rubric`.
+
+<br clear="both">
+
+<img align="left" src="assets/robot5.png" width="100">
 
 ## Model Registry
 
@@ -256,6 +270,10 @@ console.log(INPUT_MODALITIES.audio);
 | **Safety Domains** | `weapons_of_mass_destruction` `autonomous_weapons` `lethal_force` `financial_manipulation` `self_preservation` `instrumental_convergence` `deception` `delegation_effects` `geopolitical_escalation` `civilian_harm` `surveillance` `cyber_operations` |
 | **Measurement Types** | `binary` `categorical` `scalar` `rubric` |
 | **API Formats** | `anthropic` `openai` `gemini` `openai_compatible` `none` |
+
+<br clear="both">
+
+<img align="right" src="assets/robot6.png" width="100">
 
 ## Adapters
 
@@ -350,6 +368,10 @@ git clone https://github.com/Max-Highsmith/panopticon.git ../panopticon
 PANOPTICON_DIR=../panopticon/scenarios npm test
 ```
 
+<br clear="both">
+
+<img align="left" src="assets/robot7.png" width="100">
+
 ## Contributing
 
 **Add an adapter** for your benchmark framework:
@@ -361,6 +383,8 @@ PANOPTICON_DIR=../panopticon/scenarios npm test
 **Add a model** to the registry: add an entry to `lib/registry.mjs`.
 
 **Add a safety domain** or modality: update `lib/taxonomy.mjs` and the corresponding JSON schema.
+
+<br clear="both">
 
 ## License
 
