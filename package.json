@@ -1,6 +1,6 @@
 {
   "name": "safety-dance",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A standard protocol for AI safety benchmarks to declare requirements and AI models to declare capabilities, enabling compatibility handshakes before evaluation.",
   "author": "Max Highsmith",
   "type": "module",
