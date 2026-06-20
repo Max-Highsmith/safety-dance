@@ -6,9 +6,10 @@
    =================================================================== */
 
 export { checkCompatibility } from './lib/compatibility.mjs';
-export { getModelCapability, listModels, registerModel } from './lib/registry.mjs';
+export { getModelCapability, listModels, registerModel, getModelCapabilityAsync, listModelsAsync } from './lib/registry.mjs';
 export { validateManifest, validateCapability, validateReport } from './lib/validate.mjs';
 export { buildReport, computeAggregation } from './lib/report.mjs';
+export { openRouterToCapability, fetchOpenRouterModels, getOpenRouterCapability, listOpenRouterModels, clearOpenRouterCache } from './lib/openrouter.mjs';
 
 // Taxonomy — shared vocabulary for modalities, patterns, and domains
 export {
