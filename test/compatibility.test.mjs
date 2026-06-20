@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { checkCompatibility } from '../lib/compatibility.mjs';
 import { validateManifest, validateCapability } from '../lib/validate.mjs';
-import { getModelCapability, listModels } from '../lib/registry.mjs';
+import { getModelCapability, listModels, registerModel } from '../lib/registry.mjs';
 
 // ─── Helper: minimal valid manifest ───
 function makeManifest(overrides = {}) {
@@ -227,6 +227,7 @@ describe('checkCompatibility — warning cases', () => {
     const result = checkCompatibility(manifest, cap);
     assert.equal(result.compatible, true);
     assert.ok(result.warnings.some(w => w.includes('structured_json')));
+    assert.equal(result.breakdown.output_modalities, 'warn');
   });
 
   it('warns when system prompt not supported', () => {
@@ -239,6 +240,7 @@ describe('checkCompatibility — warning cases', () => {
     const result = checkCompatibility(manifest, cap);
     assert.equal(result.compatible, true);
     assert.ok(result.warnings.some(w => w.includes('system prompt')));
+    assert.equal(result.breakdown.system_prompt, 'warn');
   });
 
   it('warns when context window has tight margin (>80%)', () => {
@@ -251,6 +253,7 @@ describe('checkCompatibility — warning cases', () => {
     const result = checkCompatibility(manifest, cap);
     assert.equal(result.compatible, true);
     assert.ok(result.warnings.some(w => w.includes('tight margin')));
+    assert.equal(result.breakdown.context_window, 'warn');
   });
 
   it('warns when output tokens insufficient', () => {
@@ -263,6 +266,7 @@ describe('checkCompatibility — warning cases', () => {
     const result = checkCompatibility(manifest, cap);
     assert.equal(result.compatible, true);
     assert.ok(result.warnings.some(w => w.includes('output tokens')));
+    assert.equal(result.breakdown.output_tokens, 'warn');
   });
 
   it('warns when tool count exceeds model limit', () => {
@@ -275,6 +279,7 @@ describe('checkCompatibility — warning cases', () => {
     const result = checkCompatibility(manifest, cap);
     assert.equal(result.compatible, true);
     assert.ok(result.warnings.some(w => w.includes('tools')));
+    assert.equal(result.breakdown.tool_count, 'warn');
   });
 });
 
@@ -302,6 +307,17 @@ describe('model registry', () => {
     const cap = getModelCapability('anthropic', 'claude-sonnet-4-5');
     assert.ok(cap);
     assert.equal(cap.provider, 'anthropic');
+  });
+
+  it('rejects invalid custom model registration', () => {
+    assert.throws(() => registerModel('custom/bad-model', {
+      manifest_version: '0.1.0',
+      model_id: 'bad-model',
+      provider: 'custom',
+      interaction: {},
+      input: { modalities: ['text'] },
+      output: { modalities: ['text'] },
+    }));
   });
 
   it('returns null for unknown model', () => {

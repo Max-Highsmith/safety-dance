@@ -6,10 +6,13 @@
 
 <p align="center">
   <a href="#quick-start">Quick Start</a> &middot;
+  <a href="#case-studies">Case Studies</a> &middot;
   <a href="#the-protocol">Protocol</a> &middot;
   <a href="#evaluation-reports">Reports</a> &middot;
   <a href="#adapters">Adapters</a> &middot;
-  <a href="#contributing">Contributing</a>
+  <a href="#release-notes">Release Notes</a> &middot;
+  <a href="#contributing">Contributing</a> &middot;
+  <a href="#citation">Citation</a>
 </p>
 
 ---
@@ -30,6 +33,24 @@ An audio+text safety benchmark paired with a text-only model will simply fail. A
 
 ```bash
 npm install safety-dance
+```
+
+```bash
+# Run the bundled examples
+npx safety-dance validate manifest ./examples/audio-refusal-benchmark.json
+npx safety-dance check ./examples/audio-refusal-benchmark.json openai/gpt-4o
+
+# List bundled model capabilities
+npx safety-dance models
+
+# Validate a manifest file
+npx safety-dance validate manifest ./benchmark.json
+
+# Check a manifest against a bundled model
+npx safety-dance check ./benchmark.json anthropic/claude-opus-4-6
+
+# Check a manifest against a capability declaration on disk
+npx safety-dance check ./benchmark.json ./capability.json
 ```
 
 ```js
@@ -74,6 +95,56 @@ const report = buildReport({
 });
 // report.results.aggregation is auto-computed: { count, mean, pass_rate, ... }
 ```
+
+### CLI
+
+Safety Dance also ships a plain CLI for CI and shell workflows:
+
+```bash
+safety-dance models
+safety-dance validate manifest ./benchmark.json
+safety-dance validate capability ./capability.json
+safety-dance check ./benchmark.json openai/gpt-4o
+```
+
+`validate` exits with status `0` when the document is valid and `1` otherwise.
+`check` exits with status `0` when the manifest is compatible with the capability and `1` when blocking incompatibilities are present.
+
+## Case Studies
+
+Two concrete examples from the repo:
+
+### 1. Multimodal mismatch caught before runtime
+
+`examples/audio-refusal-benchmark.json` requires both `text` and `audio` input.
+
+```bash
+safety-dance check ./examples/audio-refusal-benchmark.json anthropic/claude-opus-4-6
+```
+
+Expected result: incompatible, with a blocking message indicating that audio input is missing.
+
+```bash
+safety-dance check ./examples/audio-refusal-benchmark.json openai/gpt-4o
+```
+
+Expected result: compatible, because the bundled `gpt-4o` capability declares audio input support.
+
+### 2. Agentic benchmark blocked for text-only baselines
+
+`examples/agentic-market-crisis.json` requires `agentic` interaction, `tool_use`, `structured_json`, and a six-tool inventory.
+
+```bash
+safety-dance check ./examples/agentic-market-crisis.json baseline/always-hold
+```
+
+Expected result: incompatible, with blocking issues for missing `agentic` and `tool_use` support.
+
+```bash
+safety-dance check ./examples/agentic-market-crisis.json anthropic/claude-opus-4-6
+```
+
+Expected result: compatible, because the bundled Claude capability satisfies the interaction, output, and resource requirements.
 
 <br clear="both">
 
@@ -235,6 +306,8 @@ Pre-populated capabilities for known models:
 | `baseline/always-hold` | text | text | single, multi | N/A |
 | `baseline/always-launch` | text | text | single, multi | N/A |
 
+The bundled registry is curated metadata intended for pre-flight evaluation planning. It should be treated as versioned package data, not as an authoritative or permanent statement of provider limits.
+
 Register custom models:
 ```js
 import { registerModel } from 'safety-dance';
@@ -285,6 +358,11 @@ Adapters convert benchmark-specific formats into Safety Dance manifests. Four ar
 | **MACHIAVELLI** | Text-based ethical RL games | `safety-dance/adapters/machiavelli` |
 | **HarmBench** | Automated red teaming behaviors | `safety-dance/adapters/harmbench` |
 | **Inspect AI** | UK AISI evaluation tasks | `safety-dance/adapters/inspect` |
+
+## Release Notes
+
+Public release notes are tracked in [CHANGELOG.md](./CHANGELOG.md).
+`0.1.0` should be treated as a public preview release: stable enough to evaluate and integrate, but still early enough that the protocol and registry metadata may evolve.
 
 ### Writing an Adapter
 
@@ -345,6 +423,44 @@ checkCompatibility(scenarioToManifest(agenticScenario), baseline);
 
 </details>
 
+## MCP Server (Optional)
+
+Safety Dance can run as an [MCP](https://modelcontextprotocol.io) server, exposing all protocol functions as tools for AI agents. This allows Claude, or any MCP-compatible agent, to perform pre-flight compatibility checks during evaluation workflows.
+
+### Setup
+
+```bash
+npm install safety-dance @modelcontextprotocol/sdk
+```
+
+### Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "safety-dance": {
+      "command": "npx",
+      "args": ["safety-dance-mcp"]
+    }
+  }
+}
+```
+
+### Available Tools
+
+| Tool | Description |
+|------|-------------|
+| `check_compatibility` | Check if a model meets a benchmark's requirements |
+| `get_model` | Look up or list registered model capabilities |
+| `validate` | Validate a manifest, capability, or report document |
+| `build_report` | Build a standardized evaluation report |
+| `compute_aggregation` | Compute summary statistics from sample results |
+| `convert_to_manifest` | Convert Panopticon/MACHIAVELLI/HarmBench/Inspect formats to manifests |
+| `get_taxonomy` | Look up valid vocabulary terms (modalities, domains, etc.) |
+| `register_model` | Register a custom model capability for the session |
+
 ## JSON Schemas
 
 Machine-readable schemas for validation:
@@ -385,6 +501,20 @@ PANOPTICON_DIR=../panopticon/scenarios npm test
 **Add a safety domain** or modality: update `lib/taxonomy.mjs` and the corresponding JSON schema.
 
 <br clear="both">
+
+## Citation
+
+If you use Safety Dance in your research, please cite:
+
+```bibtex
+@article{highsmith2026safetydance,
+  title   = {Safety Dance: A Standard Protocol for Pre-Flight Compatibility
+             Between AI Safety Benchmarks and Language Models},
+  author  = {Highsmith, Max},
+  year    = {2026},
+  url     = {https://github.com/Max-Highsmith/safety_dance}
+}
+```
 
 ## License
 

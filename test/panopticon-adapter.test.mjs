@@ -269,6 +269,9 @@ describe('integration with real panopticon scenarios', { skip: !panopticonAvaila
     let count = 0;
     for (const file of files) {
       const scenario = JSON.parse(readFileSync(join(PANOPTICON_DIR, file), 'utf-8'));
+      if (!scenario || typeof scenario !== 'object' || !scenario.id) {
+        continue;
+      }
       const manifest = scenarioToManifest(scenario);
       const validation = validateManifest(manifest);
       assert.equal(validation.valid, true,

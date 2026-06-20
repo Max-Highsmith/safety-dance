@@ -2,30 +2,64 @@
   "name": "safety-dance",
   "version": "0.1.0",
   "description": "A standard protocol for AI safety benchmarks to declare requirements and AI models to declare capabilities, enabling compatibility handshakes before evaluation.",
+  "author": "Max Highsmith",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": "./index.mjs",
     "./adapters/panopticon": "./adapters/panopticon.mjs",
     "./adapters/machiavelli": "./adapters/machiavelli.mjs",
     "./adapters/harmbench": "./adapters/harmbench.mjs",
     "./adapters/inspect": "./adapters/inspect.mjs",
-    "./schema/*": "./schema/*"
+    "./schema/*": "./schema/*",
+    "./mcp": "./mcp/server.mjs"
+  },
+  "bin": {
+    "safety-dance": "./bin/safety-dance.mjs",
+    "safety-dance-mcp": "./mcp/server.mjs"
   },
   "files": [
+    "bin/",
+    "examples/",
     "index.mjs",
     "lib/",
     "schema/",
-    "adapters/"
+    "adapters/",
+    "mcp/"
   ],
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "mcp": "node mcp/server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "keywords": [
     "ai-safety",
     "benchmark",
     "evaluation",
     "protocol",
-    "compatibility"
+    "compatibility",
+    "mcp"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Max-Highsmith/safety-dance.git"
+  },
+  "homepage": "https://github.com/Max-Highsmith/safety-dance#readme",
+  "bugs": {
+    "url": "https://github.com/Max-Highsmith/safety-dance/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1"
+  },
+  "peerDependenciesMeta": {
+    "@modelcontextprotocol/sdk": {
+      "optional": true
+    }
+  },
   "license": "MIT"
 }

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run test suite
+        run: npm test
+
+      - name: CLI quickstart validate
+        run: node ./bin/safety-dance.mjs validate manifest ./examples/audio-refusal-benchmark.json
+
+      - name: CLI quickstart compatible check
+        run: node ./bin/safety-dance.mjs check ./examples/audio-refusal-benchmark.json openai/gpt-4o
+
+      - name: CLI quickstart incompatible check
+        run: |
+          if node ./bin/safety-dance.mjs check ./examples/audio-refusal-benchmark.json anthropic/claude-opus-4-6; then
+            echo "Expected incompatible check to fail"
+            exit 1
+          fi

@@ -15,6 +15,13 @@ import { getModelCapability } from '../lib/registry.mjs';
  * @returns {Object} BenchmarkManifest conforming to the schema
  */
 export function scenarioToManifest(scenario) {
+  if (!scenario || typeof scenario !== 'object' || Array.isArray(scenario)) {
+    throw new Error('scenarioToManifest: scenario must be an object');
+  }
+  if (typeof scenario.id !== 'string' || scenario.id.length === 0) {
+    throw new Error('scenarioToManifest: scenario.id is required');
+  }
+
   const execMode = scenario.execution_mode || 'turn_based';
   const hasTools = !!(scenario.tools && Object.keys(scenario.tools).length > 0);
   const hasMonitors = !!(scenario.monitors && Object.keys(scenario.monitors).length > 0);
@@ -51,7 +58,7 @@ export function scenarioToManifest(scenario) {
 
   // ── Output Modalities ──
   const outputModalities = ['text'];
-  if (hasTools || hasMonitors) {
+  if (hasTools || hasMonitors || pattern === 'agentic') {
     outputModalities.push('tool_use');
   }
   if (responseFormat === 'json' || hasNavigation) {
@@ -72,6 +79,9 @@ export function scenarioToManifest(scenario) {
   // Tool count: action tools + monitor query tools
   const toolCount = (hasTools ? Object.keys(scenario.tools).length : 0)
     + (hasMonitors ? Object.keys(scenario.monitors).length : 0);
+  const effectiveToolCount = toolCount > 0
+    ? toolCount
+    : (pattern === 'agentic' ? 1 : 0);
 
   // ── Safety Domain ──
   const domains = inferSafetyDomains(scenario);
@@ -126,7 +136,7 @@ export function scenarioToManifest(scenario) {
   if (scenario.duration_ticks) manifest.interaction.tick_count = scenario.duration_ticks;
   if (scenario.tick_interval_ms) manifest.interaction.tick_interval_ms = scenario.tick_interval_ms;
   if (scenario.token_budget) manifest.resources.token_budget = scenario.token_budget;
-  if (toolCount > 0) manifest.resources.tool_count = toolCount;
+  if (effectiveToolCount > 0) manifest.resources.tool_count = effectiveToolCount;
 
   if (responseFormat === 'json') {
     manifest.output.structured_format = hasNavigation
