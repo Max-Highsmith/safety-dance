@@ -35,33 +35,18 @@ An audio+text safety benchmark paired with a text-only model will simply fail. A
 npm install safety-dance
 ```
 
-```bash
-# Run the bundled examples
-npx safety-dance validate manifest ./examples/audio-refusal-benchmark.json
-npx safety-dance check ./examples/audio-refusal-benchmark.json openai/gpt-4o
-
-# List bundled model capabilities
-npx safety-dance models
-
-# Validate a manifest file
-npx safety-dance validate manifest ./benchmark.json
-
-# Check a manifest against a bundled model
-npx safety-dance check ./benchmark.json anthropic/claude-opus-4-6
-
-# Check a manifest against a capability declaration on disk
-npx safety-dance check ./benchmark.json ./capability.json
-```
-
 ```js
 import {
   checkCompatibility,
-  getModelCapability,
+  getModelCapabilityAsync,
+  listModelsAsync,
   buildReport,
 } from 'safety-dance';
 
-// Look up a known model
-const claude = getModelCapability('anthropic', 'claude-opus-4-6');
+// Look up any model — checks local registry, then OpenRouter (345+ models)
+const deepseek = await getModelCapabilityAsync('deepseek', 'deepseek-v4-pro');
+const claude = await getModelCapabilityAsync('anthropic', 'claude-opus-4.8');
+const gpt = await getModelCapabilityAsync('openai', 'gpt-5.5');
 
 // Your benchmark manifest
 const manifest = {
@@ -73,42 +58,37 @@ const manifest = {
 };
 
 // Pre-flight check
-const result = checkCompatibility(manifest, claude);
+const result = checkCompatibility(manifest, deepseek);
 console.log(result.compatible); // true
 console.log(result.blocking);   // []
 
-// After evaluation, build a standardized report
-const report = buildReport({
-  manifest,
-  capability: claude,
-  run: { runner: 'my-runner@1.0.0', samples: 100, duration_ms: 60000 },
-  results: {
-    measurement_type: 'binary',
-    passed: true,
-    primary_score: 0.95,
-    samples: [
-      { sample_id: 'run-1', outcome: true, score: 1.0 },
-      { sample_id: 'run-2', outcome: false, score: 0.0 },
-      // ...
-    ],
-  },
-});
-// report.results.aggregation is auto-computed: { count, mean, pass_rate, ... }
+// List all available models (local + OpenRouter)
+const allModels = await listModelsAsync();
+console.log(allModels.length); // 345+
 ```
+
+> **Sync vs Async API**: The sync functions (`getModelCapability`, `listModels`) only check the 8 bundled models. The async functions (`getModelCapabilityAsync`, `listModelsAsync`) also query OpenRouter for 345+ models. **Use the async versions** unless you specifically want local-only lookups.
 
 ### CLI
 
-Safety Dance also ships a plain CLI for CI and shell workflows:
-
 ```bash
+# Check against any model — auto-fetches from OpenRouter if not bundled
+safety-dance check ./benchmark.json deepseek/deepseek-v4-pro
+safety-dance check ./benchmark.json anthropic/claude-opus-4.8
+
+# List bundled models
 safety-dance models
+
+# List all models (bundled + OpenRouter)
+safety-dance models --openrouter
+
+# Validate documents
 safety-dance validate manifest ./benchmark.json
 safety-dance validate capability ./capability.json
-safety-dance check ./benchmark.json openai/gpt-4o
 ```
 
 `validate` exits with status `0` when the document is valid and `1` otherwise.
-`check` exits with status `0` when the manifest is compatible with the capability and `1` when blocking incompatibilities are present.
+`check` exits with status `0` when the manifest is compatible with the capability and `1` when blocking incompatibilities are present. The `check` command automatically falls back to OpenRouter when a model is not found in the local registry.
 
 ## Case Studies
 
@@ -293,7 +273,30 @@ Reports support all measurement types: `binary` (pass_rate), `scalar` (mean/medi
 
 ## Model Registry
 
-Pre-populated capabilities for known models:
+### OpenRouter Integration (345+ models)
+
+As of v0.2.0, Safety Dance dynamically fetches model capabilities from [OpenRouter](https://openrouter.ai), covering 345+ models across all major providers. This is the default behavior when using the async API:
+
+```js
+import { getModelCapabilityAsync, listModelsAsync } from 'safety-dance';
+
+// Works for any model on OpenRouter — no hardcoding needed
+const cap = await getModelCapabilityAsync('deepseek', 'deepseek-v4-pro');
+const all = await listModelsAsync(); // 345+ models
+```
+
+OpenRouter model metadata is automatically mapped to Safety Dance capabilities:
+- `architecture.input_modalities` → input modalities (text, image, audio, video, file→pdf)
+- `supported_parameters` → tool_use (from `tools`/`tool_choice`), structured_json (from `response_format`/`structured_outputs`)
+- `context_length` → context window tokens
+- `top_provider.max_completion_tokens` → max output tokens
+- Provider → api_format (anthropic, openai, gemini, or openai_compatible)
+
+Results are cached for 5 minutes. No API key required.
+
+### Bundled Registry (local, sync)
+
+8 curated models are available locally for offline use via the sync API (`getModelCapability`, `listModels`):
 
 | Key | Input | Output | Patterns | Context |
 |-----|-------|--------|----------|---------|
@@ -306,9 +309,8 @@ Pre-populated capabilities for known models:
 | `baseline/always-hold` | text | text | single, multi | N/A |
 | `baseline/always-launch` | text | text | single, multi | N/A |
 
-The bundled registry is curated metadata intended for pre-flight evaluation planning. It should be treated as versioned package data, not as an authoritative or permanent statement of provider limits.
+### Register Custom Models
 
-Register custom models:
 ```js
 import { registerModel } from 'safety-dance';
 
@@ -362,7 +364,6 @@ Adapters convert benchmark-specific formats into Safety Dance manifests. Four ar
 ## Release Notes
 
 Public release notes are tracked in [CHANGELOG.md](./CHANGELOG.md).
-`0.1.0` should be treated as a public preview release: stable enough to evaluate and integrate, but still early enough that the protocol and registry metadata may evolve.
 
 ### Writing an Adapter
 
@@ -475,7 +476,7 @@ Machine-readable schemas for validation:
 npm test
 ```
 
-115 unit tests covering the compatibility checker, adapters, validation, and report builder. Zero external dependencies.
+155 unit tests covering the compatibility checker, adapters, validation, report builder, and OpenRouter integration. Zero external dependencies.
 
 Integration tests against real Panopticon scenarios run automatically when available:
 
